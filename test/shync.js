@@ -50,18 +50,21 @@ suite('Shync', function(){
   });
 
   suite('run()', function(){
-    test('should expect a command string and a cb', function(){
+    test('should expect a command string and a cb, or a source path + dest path and a cb', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
+      ssh.runCmd = sinon.stub();
       assert.throws(function(){ssh.run()});
       assert.throws(function(){ssh.run('date')});
+      assert.throws(function(){ssh.run('date', 'foo')});
       assert.doesNotThrow(function(){ssh.run('date', cb)});
-
+      assert.doesNotThrow(function(){ssh.run('/foo/bar', '/bar/baz', cb)});
     });
 
     test('should add the cb to the parent object', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
+      ssh.runCmd = sinon.stub();
       ssh.run('date', cb);
       assert.strictEqual(cb, ssh.cb);
     });
@@ -92,7 +95,7 @@ suite('Shync', function(){
 
   suite('runCmd()', function(){
 
-    test('should expect an opts object and command string as args', function(){
+    test('should expect an opts object and command (str or array) as args', function(){
       var ssh = new Shync(this.opts);
       sinon.stub(ssh, 'spawn', function(){
         return {
@@ -107,10 +110,30 @@ suite('Shync', function(){
                     user:'',
                     keyLoc:''}, '')
       });
+      assert.throws(function(){
+        ssh.runCmd({domain:'',
+                    user:'',
+                    keyLoc:''}, [])
+      });
+      assert.throws(function(){
+        ssh.runCmd({domain:'',
+                    user:'',
+                    keyLoc:''}, [''])
+      });
+      assert.throws(function(){
+        ssh.runCmd({domain:'',
+                    user:'',
+                    keyLoc:''}, ['/foo/bar'])
+      });
       assert.doesNotThrow(function(){
         ssh.runCmd({domain: 'abc.com',
                     user:   'ubuntu',
                     keyLoc: '/foo/id_rsa.pub'}, 'date');
+      });
+      assert.doesNotThrow(function(){
+        ssh.runCmd({domain: 'abc.com',
+                    user:   'ubuntu',
+                    keyLoc: '/foo/id_rsa.pub'}, ['/foo/bar', '/bar/baz']);
       });
     });
 
@@ -127,7 +150,7 @@ suite('Shync', function(){
       assert.isFalse(ssh.domains[this.singleCmdOpts.domain].cmdComplete);
     });
     
-    test('should call Shync.spawn with the ssh cmd', function(){
+    test('should call Shync.spawn with the ssh or scp cmd', function(){
       var ssh = new Shync(this.opts);
       
       sinon.stub(ssh, 'spawn', function(){
@@ -146,6 +169,27 @@ suite('Shync', function(){
 
       assert.ok(ssh.spawn.calledOnce);
       assert.ok(ssh.spawn.calledWith('ssh', sshParams));
+
+      
+      var ssh = new Shync(this.opts);
+      
+      sinon.stub(ssh, 'spawn', function(){
+        return {
+          addListener: sinon.stub()
+        }
+      });
+      var opts = this.singleCmdOpts;
+      ssh.runCmd(opts, ['/foo/bar', '/bar/baz']);
+
+      var scpParams = [];
+      scpParams.push('-i' + opts.keyLoc);
+      scpParams.push('/foo/bar');
+      scpParams.push(opts.user+'@'+opts.domain+':'+'/bar/baz');
+
+      assert.ok(ssh.spawn.calledOnce);
+      assert.ok(ssh.spawn.calledWith('scp', scpParams));
+
+      
     });
 
     test('should add a process to Shync.procs', function(){
@@ -341,10 +385,19 @@ suite('Shync', function(){
   suite('playground', function(){
     test('do stuff', function(done){
       
-      var ssh = new Shync(this.LIVEopts);
-      ssh.run('sleepdf 5', function(code){
-        console.log('user cb called with:', code);
-        done();
+      //var ssh = new Shync(this.LIVEopts);
+      //ssh.run('sleep 5', function(code){
+      //  console.log('user cb called with:', code);
+      //  done();
+      //});
+
+      var remoteServer = new Shync(this.LIVEopts);
+      remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
+        console.log('scp called with:', code);
+        remoteServer.run('mv testerooney testeramma', function(code){
+          console.log('ssh called with:', code);
+          done();
+        });
       });
 
     });
