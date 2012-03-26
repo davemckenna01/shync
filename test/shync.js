@@ -31,31 +31,45 @@ suite('Shync', function(){
   });
 
   suite('constructor', function(){
-    test('should expect an opts object, command string, and callback as args', function(){
+    test('should expect an opts object arg', function(){
       function cb (){}
       assert.throws(function(){new Shync()});
-      assert.throws(function(){new Shync({}, '')});
-      assert.throws(function(){new Shync({}, '', cb)});
+      assert.throws(function(){new Shync({})});
       assert.throws(function(){
         new Shync({domains: [],
                    user:    '',
-                   keyLoc:  ''}, '', cb)
+                   keyLoc:  ''})
       });
       assert.doesNotThrow(function(){
         new Shync({domains: ['abc.com'],
                    user:    'ubuntu',
-                   keyLoc:  '/foo/id_rsa.pub'}, 'date', cb)
+                   keyLoc:  '/foo/id_rsa.pub'})
       });
 
     });
   });
 
   suite('run()', function(){
+    test('should expect a command string and a cb', function(){
+      function cb (){}
+      var ssh = new Shync(this.opts);
+      assert.throws(function(){ssh.run()});
+      assert.throws(function(){ssh.run('date')});
+      assert.doesNotThrow(function(){ssh.run('date', cb)});
+
+    });
+
+    test('should add the cb to the parent object', function(){
+      function cb (){}
+      var ssh = new Shync(this.opts);
+      ssh.run('date', cb);
+      assert.strictEqual(cb, ssh.cb);
+    });
+
     test('should call runCmd() w/ opts and the command, iterating over domains', function(){
-      var command = 'date';
-      var ssh = new Shync(this.opts, command, function(){});
+      var ssh = new Shync(this.opts);
       ssh.runCmd = sinon.spy();
-      ssh.run()
+      ssh.run('date', function(){});
 
       assert.ok(ssh.runCmd.calledTwice);
       assert.ok(ssh.runCmd.getCall(0).calledWithExactly(
@@ -79,7 +93,7 @@ suite('Shync', function(){
   suite('runCmd()', function(){
 
     test('should expect an opts object and command string as args', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
       sinon.stub(ssh, 'spawn', function(){
         return {
           addListener: sinon.stub()
@@ -101,7 +115,7 @@ suite('Shync', function(){
     });
 
     test('should add an object representing command state to Shync.domains', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
       sinon.stub(ssh, 'spawn', function(){
         return {
           addListener: sinon.stub()
@@ -114,7 +128,7 @@ suite('Shync', function(){
     });
     
     test('should call Shync.spawn with the ssh cmd', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
       
       sinon.stub(ssh, 'spawn', function(){
         return {
@@ -135,7 +149,7 @@ suite('Shync', function(){
     });
 
     test('should add a process to Shync.procs', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
       sinon.stub(ssh, 'spawn', function(){
         return {
           addListener: sinon.stub()
@@ -150,7 +164,7 @@ suite('Shync', function(){
 
     test('should call Shync.spawn().addListener with "exit" and a cb', function(){
 
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
 
       sinon.stub(ssh, 'spawn', function(){
         return {
@@ -168,7 +182,7 @@ suite('Shync', function(){
     });
 
     test('should call Shync.cmdCb with ret code + domain', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
       ssh.cmdCb = sinon.spy();
 
       sinon.stub(ssh, 'spawn', function(){
@@ -185,7 +199,7 @@ suite('Shync', function(){
     });
 
     test('should call Shync.cmdCb as commands complete', function(done){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
       sinon.stub(ssh, 'spawn', function(){
         return new EventEmitter();
       });
@@ -222,7 +236,8 @@ suite('Shync', function(){
 
   suite('cmdCb()', function(){
     test('should expect a return code and a domain', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
+      ssh.cb = sinon.stub();
       assert.throws(function(){
         ssh.cmdCb();
       });
@@ -232,29 +247,30 @@ suite('Shync', function(){
     });
 
     test('should update Shync.domains state object', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
+      ssh.cb = sinon.stub();
       ssh.domains['google.com'] = {cmdComplete: false};
       ssh.cmdCb(0, 'google.com');
       assert.isTrue(ssh.domains['google.com'].cmdComplete);
     });
 
     test('should call the user-provided callback with a ret code of 0 if all commands have completed with a 0', function(){
-      var cb = sinon.spy();
-      var ssh = new Shync(this.opts, 'date', cb);
+      var ssh = new Shync(this.opts);
+      ssh.cb = sinon.spy();
       ssh.domains['google.com'] = {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
 
       ssh.cmdCb(0, 'google.com');
-      assert.ok(!cb.called);
+      assert.ok(!ssh.cb.called);
       ssh.cmdCb(0, 'maps.google.com');
-      assert.ok(cb.calledOnce);
-      assert.isNumber(cb.getCall(0).args[0]);
+      assert.ok(ssh.cb.calledOnce);
+      assert.isNumber(ssh.cb.getCall(0).args[0]);
       
     });
 
     test('should call the user cb immediately with the ret code if the ret code is not 0', function(){
-      var cb = sinon.spy();
-      var ssh = new Shync(this.opts, 'date', cb);
+      var ssh = new Shync(this.opts);
+      ssh.cb = sinon.spy();
       ssh.domains['google.com'] =      {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
 
@@ -263,14 +279,15 @@ suite('Shync', function(){
 
       ssh.cmdCb(1928, 'google.com');
 
-      assert.ok(cb.calledOnce);
-      assert.ok(cb.calledWith(1928));
+      assert.ok(ssh.cb.calledOnce);
+      assert.ok(ssh.cb.calledWith(1928));
       assert.isTrue(ssh.domains['google.com'].cmdComplete);
       assert.isFalse(ssh.domains['maps.google.com'].cmdComplete);
     });
 
     test('should kill all outstanding processes as soon as we get a non 0 ret code from a process', function(){
-      var ssh = new Shync(this.opts, 'date', function(){});
+      var ssh = new Shync(this.opts);
+      ssh.cb = sinon.spy();
       
       ssh.domains['mail.google.com'] = {cmdComplete: false};
       ssh.domains['google.com'] =      {cmdComplete: false};
@@ -293,8 +310,8 @@ suite('Shync', function(){
     });
 
     test('should only call the user cb once', function(){
-      var cb = sinon.spy();
-      var ssh = new Shync(this.opts, 'date', cb);
+      var ssh = new Shync(this.opts);
+      ssh.cb = sinon.spy();
 
       ssh.domains['google.com'] =      {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
@@ -302,12 +319,12 @@ suite('Shync', function(){
       ssh.procs['maps.google.com'] = {kill:sinon.stub()};
 
       ssh.cmdCb(1928, 'google.com');
-      assert.ok(cb.called);
+      assert.ok(ssh.cb.called);
       ssh.cmdCb(0, 'maps.google.com');
-      assert.ok(cb.calledOnce);
+      assert.ok(ssh.cb.calledOnce);
 
-      cb = sinon.spy();
-      ssh = new Shync(this.opts, 'date', cb);
+      ssh = new Shync(this.opts);
+      ssh.cb = sinon.spy();
 
       ssh.domains['google.com'] =      {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
@@ -315,20 +332,21 @@ suite('Shync', function(){
       ssh.procs['maps.google.com'] = {kill:sinon.stub()};
 
       ssh.cmdCb(0, 'google.com');
-      assert.ok(!cb.called);
+      assert.ok(!ssh.cb.called);
       ssh.cmdCb(0, 'maps.google.com');
-      assert.ok(cb.calledOnce);
+      assert.ok(ssh.cb.calledOnce);
     });
   });
 
   suite('playground', function(){
     test('do stuff', function(done){
       
-      var ssh = new Shync(this.LIVEopts, 'sleep 5', function(code){
+      var ssh = new Shync(this.LIVEopts);
+      ssh.run('sleepdf 5', function(code){
         console.log('user cb called with:', code);
         done();
       });
-      ssh.run();
+
     });
   });
 
