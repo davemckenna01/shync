@@ -18,6 +18,13 @@ suite('Shync', function(){
       user:   this.opts.user,
       keyLoc: this.opts.keyLoc
     };
+
+    this.LIVEopts = {
+      domains:['ec2-107-22-124-43.compute-1.amazonaws.com', 
+               'ec2-107-21-142-80.compute-1.amazonaws.com'],
+      user:   'ubuntu',
+      keyLoc: '/Users/davemckenna/.ec2/ec21.pem',
+    };
   });
 
   teardown(function(){
@@ -160,6 +167,23 @@ suite('Shync', function(){
       assert.isFunction(proc.addListener.getCall(0).args[1]);
     });
 
+    test('should call Shync.cmdCb with ret code + domain', function(){
+      var ssh = new Shync(this.opts, 'date', function(){});
+      ssh.cmdCb = sinon.spy();
+
+      sinon.stub(ssh, 'spawn', function(){
+        return new EventEmitter();
+      });
+
+      this.singleCmdOpts.domain = 'hithere.com';
+      ssh.runCmd(this.singleCmdOpts, 'date');
+      ssh.procs['hithere.com'].emit('exit', 0);
+      
+      assert.ok(ssh.cmdCb.calledOnce);
+      assert.ok(ssh.cmdCb.calledWith(0, 'hithere.com'));
+
+    });
+
     test('should call Shync.cmdCb as commands complete', function(done){
       var ssh = new Shync(this.opts, 'date', function(){});
       sinon.stub(ssh, 'spawn', function(){
@@ -294,6 +318,17 @@ suite('Shync', function(){
       assert.ok(!cb.called);
       ssh.cmdCb(0, 'maps.google.com');
       assert.ok(cb.calledOnce);
+    });
+  });
+
+  suite('playground', function(){
+    test('do stuff', function(done){
+      
+      var ssh = new Shync(this.LIVEopts, 'sleep 5', function(code){
+        console.log('user cb called with:', code);
+        done();
+      });
+      ssh.run();
     });
   });
 
