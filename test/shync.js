@@ -103,8 +103,7 @@ suite('Shync', function(){
       ssh.runCmd(this.singleCmdOpts, 'date');
 
       assert.ok(ssh.domains.hasOwnProperty(this.singleCmdOpts.domain));
-      assert.isFalse(ssh.domains[this.singleCmdOpts.domain].commandRun);
-      assert.isNull(ssh.domains[this.singleCmdOpts.domain].retCode);
+      assert.isFalse(ssh.domains[this.singleCmdOpts.domain].cmdComplete);
     });
     
     test('should call Shync.spawn with the ssh cmd', function(){
@@ -171,7 +170,6 @@ suite('Shync', function(){
 
       ssh.cmdCb = function(){
         calls += 1;
-        console.log('call ', calls);
         if (calls == 2) {
           assert.ok(true);
           done();
@@ -198,10 +196,105 @@ suite('Shync', function(){
 
   });
 
-  //suite('cmdCb()', function(){
-  //  test('should expect', function(){
-  //    
-  //  });
-  //});
+  suite('cmdCb()', function(){
+    test('should expect a return code and a domain', function(){
+      var ssh = new Shync(this.opts, 'date', function(){});
+      assert.throws(function(){
+        ssh.cmdCb();
+      });
+      assert.doesNotThrow(function(){
+        ssh.cmdCb(0, 'google.com');
+      });
+    });
+
+    test('should update Shync.domains state object', function(){
+      var ssh = new Shync(this.opts, 'date', function(){});
+      ssh.domains['google.com'] = {cmdComplete: false};
+      ssh.cmdCb(0, 'google.com');
+      assert.isTrue(ssh.domains['google.com'].cmdComplete);
+    });
+
+    test('should call the user-provided callback with a ret code of 0 if all commands have completed with a 0', function(){
+      var cb = sinon.spy();
+      var ssh = new Shync(this.opts, 'date', cb);
+      ssh.domains['google.com'] = {cmdComplete: false};
+      ssh.domains['maps.google.com'] = {cmdComplete: false};
+
+      ssh.cmdCb(0, 'google.com');
+      assert.ok(!cb.called);
+      ssh.cmdCb(0, 'maps.google.com');
+      assert.ok(cb.calledOnce);
+      assert.isNumber(cb.getCall(0).args[0]);
+      
+    });
+
+    test('should call the user cb immediately with the ret code if the ret code is not 0', function(){
+      var cb = sinon.spy();
+      var ssh = new Shync(this.opts, 'date', cb);
+      ssh.domains['google.com'] =      {cmdComplete: false};
+      ssh.domains['maps.google.com'] = {cmdComplete: false};
+
+      ssh.procs['google.com'] =      {kill:sinon.stub()};
+      ssh.procs['maps.google.com'] = {kill:sinon.stub()};
+
+      ssh.cmdCb(1928, 'google.com');
+
+      assert.ok(cb.calledOnce);
+      assert.ok(cb.calledWith(1928));
+      assert.isTrue(ssh.domains['google.com'].cmdComplete);
+      assert.isFalse(ssh.domains['maps.google.com'].cmdComplete);
+    });
+
+    test('should kill all outstanding processes as soon as we get a non 0 ret code from a process', function(){
+      var ssh = new Shync(this.opts, 'date', function(){});
+      
+      ssh.domains['mail.google.com'] = {cmdComplete: false};
+      ssh.domains['google.com'] =      {cmdComplete: false};
+      ssh.domains['maps.google.com'] = {cmdComplete: false};
+      ssh.domains['docs.google.com'] = {cmdComplete: false};
+
+      ssh.procs['mail.google.com'] = {kill:sinon.spy()};
+      ssh.procs['google.com'] =      {kill:sinon.spy()};
+      ssh.procs['maps.google.com'] = {kill:sinon.spy()};
+      ssh.procs['docs.google.com'] = {kill:sinon.spy()};
+
+      ssh.cmdCb(0, 'mail.google.com');
+      ssh.cmdCb(1928, 'google.com');
+
+      assert.ok(!ssh.procs['mail.google.com'].kill.called);
+      assert.ok(!ssh.procs['google.com'].kill.called);
+      assert.ok(ssh.procs['maps.google.com'].kill.calledOnce);
+      assert.ok(ssh.procs['docs.google.com'].kill.calledOnce);
+
+    });
+
+    test('should only call the user cb once', function(){
+      var cb = sinon.spy();
+      var ssh = new Shync(this.opts, 'date', cb);
+
+      ssh.domains['google.com'] =      {cmdComplete: false};
+      ssh.domains['maps.google.com'] = {cmdComplete: false};
+      ssh.procs['google.com'] =      {kill:sinon.stub()};
+      ssh.procs['maps.google.com'] = {kill:sinon.stub()};
+
+      ssh.cmdCb(1928, 'google.com');
+      assert.ok(cb.called);
+      ssh.cmdCb(0, 'maps.google.com');
+      assert.ok(cb.calledOnce);
+
+      cb = sinon.spy();
+      ssh = new Shync(this.opts, 'date', cb);
+
+      ssh.domains['google.com'] =      {cmdComplete: false};
+      ssh.domains['maps.google.com'] = {cmdComplete: false};
+      ssh.procs['google.com'] =      {kill:sinon.stub()};
+      ssh.procs['maps.google.com'] = {kill:sinon.stub()};
+
+      ssh.cmdCb(0, 'google.com');
+      assert.ok(!cb.called);
+      ssh.cmdCb(0, 'maps.google.com');
+      assert.ok(cb.calledOnce);
+    });
+  });
 
 });
