@@ -3,6 +3,8 @@ var assert = require('chai').assert,
     util   = require('util'),
     Shync  = require('../lib/shync.js').Shync;
 
+var EventEmitter = require('events').EventEmitter;
+
 suite('Shync', function(){
 
   setup(function(){
@@ -91,7 +93,7 @@ suite('Shync', function(){
       });
     });
 
-    test('should add an object to Shync.domains', function(){
+    test('should add an object representing command state to Shync.domains', function(){
       var ssh = new Shync(this.opts, 'date', function(){});
       sinon.stub(ssh, 'spawn', function(){
         return {
@@ -126,6 +128,20 @@ suite('Shync', function(){
       assert.ok(ssh.spawn.calledWith('ssh', sshParams));
     });
 
+    test('should add a process to Shync.procs', function(){
+      var ssh = new Shync(this.opts, 'date', function(){});
+      sinon.stub(ssh, 'spawn', function(){
+        return {
+          addListener: sinon.stub()
+        }
+      });
+      var opts = this.singleCmdOpts;
+      ssh.runCmd(opts, 'date');
+
+      assert.ok(ssh.procs.hasOwnProperty(opts.domain));
+
+    });
+
     test('should call Shync.spawn().addListener with "exit" and a cb', function(){
 
       var ssh = new Shync(this.opts, 'date', function(){});
@@ -137,45 +153,55 @@ suite('Shync', function(){
       });
 
       ssh.runCmd(this.singleCmdOpts, 'date');
+      
+      var proc = ssh.procs[this.singleCmdOpts.domain];
 
-      assert.ok(ssh.proc.addListener.calledOnce);
-      assert.ok(ssh.proc.addListener.calledWith('exit', ssh.cmdCb));
+      assert.ok(proc.addListener.calledOnce);
+      assert.ok(proc.addListener.calledWith('exit'));
+      assert.isFunction(proc.addListener.getCall(0).args[1]);
     });
 
-    test('should call Shync.cmdCb when cmd done', function(){
+    test('should call Shync.cmdCb as commands complete', function(done){
       var ssh = new Shync(this.opts, 'date', function(){});
-      ssh.cmdCb = sinon.spy();
-
       sinon.stub(ssh, 'spawn', function(){
-        var obj = {
-          listeners: {},
-          addListener: function (eventName, cb){
-            if (this.listeners[eventName]){
-              this.listeners[eventName].push(cb);
-            } else {
-              this.listeners[eventName] = [];
-              this.listeners[eventName].push(cb);
-            }
-          },
-          emit: function (eventName, data){
-            var fns = this.listeners[eventName];
-            if (fns){
-              for (var i=0, l=fns.length; i<l; i+=1){
-                fns[i](data);
-              }
-            }
-          }
-        }
-        return obj;
+        return new EventEmitter();
       });
 
-      ssh.runCmd(this.singleCmdOpts, 'date');
-      ssh.proc.emit('exit', 0);
+      var calls = 0
 
-      assert.ok(ssh.cmdCb.calledOnce);
+      ssh.cmdCb = function(){
+        calls += 1;
+        console.log('call ', calls);
+        if (calls == 2) {
+          assert.ok(true);
+          done();
+        }
+      }
+
+      var self = this;
+
+      this.singleCmdOpts.domain = 'hithere.com';
+      ssh.runCmd(this.singleCmdOpts, 'date');
+
+      setTimeout(function(){
+        ssh.procs['hithere.com'].emit('exit', 0);
+      }, 250);
+
+      this.singleCmdOpts.domain = 'hellotoyou.com';
+      ssh.runCmd(this.singleCmdOpts, 'date');
+
+      setTimeout(function(){
+        ssh.procs['hellotoyou.com'].emit('exit', 0);
+      }, 500);
 
     });
 
   });
+
+  //suite('cmdCb()', function(){
+  //  test('should expect', function(){
+  //    
+  //  });
+  //});
 
 });
