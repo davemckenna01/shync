@@ -69,6 +69,21 @@ suite('Shync', function(){
       assert.strictEqual(cb, ssh.cb);
     });
 
+    test('should reset object state, for running with a clean slate', function(){
+      function cb (){}
+      var ssh = new Shync(this.opts);
+      ssh.runCmd = sinon.stub();
+      ssh.cbCalled = true;
+      ssh.domains = {foo:'bar'};
+      ssh.procs = {bar:'baz'};
+      ssh.run('date', cb);
+      
+      assert.isFalse(ssh.cbCalled);
+      assert.deepEqual({}, ssh.domains);
+      assert.deepEqual({}, ssh.procs);
+
+    });
+
     test('should call runCmd() w/ opts and the command, iterating over domains', function(){
       var ssh = new Shync(this.opts);
       ssh.runCmd = sinon.spy();
@@ -384,19 +399,16 @@ suite('Shync', function(){
 
   suite('playground', function(){
     test('do stuff', function(done){
-      
-      //var ssh = new Shync(this.LIVEopts);
-      //ssh.run('sleep 5', function(code){
-      //  console.log('user cb called with:', code);
-      //  done();
-      //});
 
       var remoteServer = new Shync(this.LIVEopts);
       remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
         console.log('scp called with:', code);
-        remoteServer.run('mv testerooney testeramma', function(code){
+        remoteServer.run('sleep 5', function(code){
           console.log('ssh called with:', code);
-          done();
+          remoteServer.run('mv testerooney testeramma', function(code){
+            console.log('ssh called with:', code);
+            done();
+          });
         });
       });
 
