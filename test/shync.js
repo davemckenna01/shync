@@ -177,16 +177,16 @@ suite('Shync', function(){
       });
       var opts = this.singleCmdOpts;
 
-      ssh.bypassFingerprint = true;
+      ssh.opts.bypassFingerprint = true;
       ssh._runCmd(opts, 'date');
 
       var sshParams = [];
+      sshParams.push('-oUserKnownHostsFile=/dev/null');
+      sshParams.push('-oStrictHostKeyChecking=no');
       sshParams.push('-i' + opts.keyLoc);
       sshParams.push('-l' + opts.user);
       sshParams.push(opts.domain);
       sshParams.push('date');
-      sshParams.push('-oUserKnownHostsFile=/dev/null');
-      sshParams.push('-oStrictHostKeyChecking=no');
 
       assert.ok(ssh.spawn.calledOnce);
       assert.ok(ssh.spawn.calledWith('ssh', sshParams));
@@ -425,31 +425,22 @@ suite('Shync', function(){
     });
   });
 
-  suite('playground', function(){
-    test('do stuff', function(done){
+  //suite('playground', function(){
+  //  test('do stuff', function(done){
 
-      //var remoteServer = new Shync(this.LIVEopts);
-      //remoteServer.run('sleep 2', function(code){
-      //  console.log('ssh called with:', code);
-      //  remoteServer.run('touch someFile', function(code){
-      //    console.log('ssh called with:', code);
-      //    done();
-      //  });
-      //});
+  //    var remoteServer = new Shync(this.LIVEopts);
+  //    remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
+  //      console.log('scp called with:', code);
+  //      remoteServer.run('sleep 2', function(code){
+  //        console.log('ssh called with:', code);
+  //        remoteServer.run('mv testerooney testeramma', function(code){
+  //          console.log('ssh called with:', code);
+  //          done();
+  //        });
+  //      });
+  //    });
 
-      var remoteServer = new Shync(this.LIVEopts);
-      remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
-        console.log('scp called with:', code);
-        remoteServer.run('sleep 2', function(code){
-          console.log('ssh called with:', code);
-          remoteServer.run('mv testerooney testeramma', function(code){
-            console.log('ssh called with:', code);
-            done();
-          });
-        });
-      });
-
-    });
-  });
+  //  });
+  //});
 
 });
