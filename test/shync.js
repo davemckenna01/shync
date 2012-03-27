@@ -53,7 +53,7 @@ suite('Shync', function(){
     test('should expect a command string and a cb, or a source path + dest path and a cb', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
-      ssh.runCmd = sinon.stub();
+      ssh._runCmd = sinon.stub();
       assert.throws(function(){ssh.run()});
       assert.throws(function(){ssh.run('date')});
       assert.throws(function(){ssh.run('date', 'foo')});
@@ -64,7 +64,7 @@ suite('Shync', function(){
     test('should add the cb to the parent object', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
-      ssh.runCmd = sinon.stub();
+      ssh._runCmd = sinon.stub();
       ssh.run('date', cb);
       assert.strictEqual(cb, ssh.cb);
     });
@@ -72,7 +72,7 @@ suite('Shync', function(){
     test('should reset object state, for running with a clean slate', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
-      ssh.runCmd = sinon.stub();
+      ssh._runCmd = sinon.stub();
       ssh.cbCalled = true;
       ssh.domains = {foo:'bar'};
       ssh.procs = {bar:'baz'};
@@ -84,20 +84,20 @@ suite('Shync', function(){
 
     });
 
-    test('should call runCmd() w/ opts and the command, iterating over domains', function(){
+    test('should call _runCmd() w/ opts and the command, iterating over domains', function(){
       var ssh = new Shync(this.opts);
-      ssh.runCmd = sinon.spy();
+      ssh._runCmd = sinon.spy();
       ssh.run('date', function(){});
 
-      assert.ok(ssh.runCmd.calledTwice);
-      assert.ok(ssh.runCmd.getCall(0).calledWithExactly(
+      assert.ok(ssh._runCmd.calledTwice);
+      assert.ok(ssh._runCmd.getCall(0).calledWithExactly(
         {domain:  this.opts.domains[0],
          user:    this.opts.user,
          keyLoc:  this.opts.keyLoc
         }, 
         'date'
       ));
-      assert.ok(ssh.runCmd.getCall(1).calledWithExactly(
+      assert.ok(ssh._runCmd.getCall(1).calledWithExactly(
         {domain:  this.opts.domains[1],
          user:    this.opts.user,
          keyLoc:  this.opts.keyLoc
@@ -108,7 +108,7 @@ suite('Shync', function(){
 
   });
 
-  suite('runCmd()', function(){
+  suite('_runCmd()', function(){
 
     test('should expect an opts object and command (str or array) as args', function(){
       var ssh = new Shync(this.opts);
@@ -118,35 +118,35 @@ suite('Shync', function(){
         }
       });
 
-      assert.throws(function(){ssh.runCmd()});
-      assert.throws(function(){ssh.runCmd({}, '')});
+      assert.throws(function(){ssh._runCmd()});
+      assert.throws(function(){ssh._runCmd({}, '')});
       assert.throws(function(){
-        ssh.runCmd({domain:'',
+        ssh._runCmd({domain:'',
                     user:'',
                     keyLoc:''}, '')
       });
       assert.throws(function(){
-        ssh.runCmd({domain:'',
+        ssh._runCmd({domain:'',
                     user:'',
                     keyLoc:''}, [])
       });
       assert.throws(function(){
-        ssh.runCmd({domain:'',
+        ssh._runCmd({domain:'',
                     user:'',
                     keyLoc:''}, [''])
       });
       assert.throws(function(){
-        ssh.runCmd({domain:'',
+        ssh._runCmd({domain:'',
                     user:'',
                     keyLoc:''}, ['/foo/bar'])
       });
       assert.doesNotThrow(function(){
-        ssh.runCmd({domain: 'abc.com',
+        ssh._runCmd({domain: 'abc.com',
                     user:   'ubuntu',
                     keyLoc: '/foo/id_rsa.pub'}, 'date');
       });
       assert.doesNotThrow(function(){
-        ssh.runCmd({domain: 'abc.com',
+        ssh._runCmd({domain: 'abc.com',
                     user:   'ubuntu',
                     keyLoc: '/foo/id_rsa.pub'}, ['/foo/bar', '/bar/baz']);
       });
@@ -159,7 +159,7 @@ suite('Shync', function(){
           addListener: sinon.stub()
         }
       });
-      ssh.runCmd(this.singleCmdOpts, 'date');
+      ssh._runCmd(this.singleCmdOpts, 'date');
 
       assert.ok(ssh.domains.hasOwnProperty(this.singleCmdOpts.domain));
       assert.isFalse(ssh.domains[this.singleCmdOpts.domain].cmdComplete);
@@ -174,7 +174,7 @@ suite('Shync', function(){
         }
       });
       var opts = this.singleCmdOpts;
-      ssh.runCmd(opts, 'date');
+      ssh._runCmd(opts, 'date');
 
       var sshParams = [];
       sshParams.push('-i' + opts.keyLoc);
@@ -194,7 +194,7 @@ suite('Shync', function(){
         }
       });
       var opts = this.singleCmdOpts;
-      ssh.runCmd(opts, ['/foo/bar', '/bar/baz']);
+      ssh._runCmd(opts, ['/foo/bar', '/bar/baz']);
 
       var scpParams = [];
       scpParams.push('-i' + opts.keyLoc);
@@ -215,7 +215,7 @@ suite('Shync', function(){
         }
       });
       var opts = this.singleCmdOpts;
-      ssh.runCmd(opts, 'date');
+      ssh._runCmd(opts, 'date');
 
       assert.ok(ssh.procs.hasOwnProperty(opts.domain));
 
@@ -231,7 +231,7 @@ suite('Shync', function(){
         }
       });
 
-      ssh.runCmd(this.singleCmdOpts, 'date');
+      ssh._runCmd(this.singleCmdOpts, 'date');
       
       var proc = ssh.procs[this.singleCmdOpts.domain];
 
@@ -240,24 +240,24 @@ suite('Shync', function(){
       assert.isFunction(proc.addListener.getCall(0).args[1]);
     });
 
-    test('should call Shync.cmdCb with ret code + domain', function(){
+    test('should call Shync._cmdCb with ret code + domain', function(){
       var ssh = new Shync(this.opts);
-      ssh.cmdCb = sinon.spy();
+      ssh._cmdCb = sinon.spy();
 
       sinon.stub(ssh, 'spawn', function(){
         return new EventEmitter();
       });
 
       this.singleCmdOpts.domain = 'hithere.com';
-      ssh.runCmd(this.singleCmdOpts, 'date');
+      ssh._runCmd(this.singleCmdOpts, 'date');
       ssh.procs['hithere.com'].emit('exit', 0);
       
-      assert.ok(ssh.cmdCb.calledOnce);
-      assert.ok(ssh.cmdCb.calledWith(0, 'hithere.com'));
+      assert.ok(ssh._cmdCb.calledOnce);
+      assert.ok(ssh._cmdCb.calledWith(0, 'hithere.com'));
 
     });
 
-    test('should call Shync.cmdCb as commands complete', function(done){
+    test('should call Shync._cmdCb as commands complete', function(done){
       var ssh = new Shync(this.opts);
       sinon.stub(ssh, 'spawn', function(){
         return new EventEmitter();
@@ -265,7 +265,7 @@ suite('Shync', function(){
 
       var calls = 0
 
-      ssh.cmdCb = function(){
+      ssh._cmdCb = function(){
         calls += 1;
         if (calls == 2) {
           assert.ok(true);
@@ -276,14 +276,14 @@ suite('Shync', function(){
       var self = this;
 
       this.singleCmdOpts.domain = 'hithere.com';
-      ssh.runCmd(this.singleCmdOpts, 'date');
+      ssh._runCmd(this.singleCmdOpts, 'date');
 
       setTimeout(function(){
         ssh.procs['hithere.com'].emit('exit', 0);
       }, 250);
 
       this.singleCmdOpts.domain = 'hellotoyou.com';
-      ssh.runCmd(this.singleCmdOpts, 'date');
+      ssh._runCmd(this.singleCmdOpts, 'date');
 
       setTimeout(function(){
         ssh.procs['hellotoyou.com'].emit('exit', 0);
@@ -293,15 +293,15 @@ suite('Shync', function(){
 
   });
 
-  suite('cmdCb()', function(){
+  suite('_cmdCb()', function(){
     test('should expect a return code and a domain', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.stub();
       assert.throws(function(){
-        ssh.cmdCb();
+        ssh._cmdCb();
       });
       assert.doesNotThrow(function(){
-        ssh.cmdCb(0, 'google.com');
+        ssh._cmdCb(0, 'google.com');
       });
     });
 
@@ -309,7 +309,7 @@ suite('Shync', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.stub();
       ssh.domains['google.com'] = {cmdComplete: false};
-      ssh.cmdCb(0, 'google.com');
+      ssh._cmdCb(0, 'google.com');
       assert.isTrue(ssh.domains['google.com'].cmdComplete);
     });
 
@@ -319,9 +319,9 @@ suite('Shync', function(){
       ssh.domains['google.com'] = {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
 
-      ssh.cmdCb(0, 'google.com');
+      ssh._cmdCb(0, 'google.com');
       assert.ok(!ssh.cb.called);
-      ssh.cmdCb(0, 'maps.google.com');
+      ssh._cmdCb(0, 'maps.google.com');
       assert.ok(ssh.cb.calledOnce);
       assert.isNumber(ssh.cb.getCall(0).args[0]);
       
@@ -336,7 +336,7 @@ suite('Shync', function(){
       ssh.procs['google.com'] =      {kill:sinon.stub()};
       ssh.procs['maps.google.com'] = {kill:sinon.stub()};
 
-      ssh.cmdCb(1928, 'google.com');
+      ssh._cmdCb(1928, 'google.com');
 
       assert.ok(ssh.cb.calledOnce);
       assert.ok(ssh.cb.calledWith(1928));
@@ -358,8 +358,8 @@ suite('Shync', function(){
       ssh.procs['maps.google.com'] = {kill:sinon.spy()};
       ssh.procs['docs.google.com'] = {kill:sinon.spy()};
 
-      ssh.cmdCb(0, 'mail.google.com');
-      ssh.cmdCb(1928, 'google.com');
+      ssh._cmdCb(0, 'mail.google.com');
+      ssh._cmdCb(1928, 'google.com');
 
       assert.ok(!ssh.procs['mail.google.com'].kill.called);
       assert.ok(!ssh.procs['google.com'].kill.called);
@@ -377,9 +377,9 @@ suite('Shync', function(){
       ssh.procs['google.com'] =      {kill:sinon.stub()};
       ssh.procs['maps.google.com'] = {kill:sinon.stub()};
 
-      ssh.cmdCb(1928, 'google.com');
+      ssh._cmdCb(1928, 'google.com');
       assert.ok(ssh.cb.called);
-      ssh.cmdCb(0, 'maps.google.com');
+      ssh._cmdCb(0, 'maps.google.com');
       assert.ok(ssh.cb.calledOnce);
 
       ssh = new Shync(this.opts);
@@ -390,29 +390,29 @@ suite('Shync', function(){
       ssh.procs['google.com'] =      {kill:sinon.stub()};
       ssh.procs['maps.google.com'] = {kill:sinon.stub()};
 
-      ssh.cmdCb(0, 'google.com');
+      ssh._cmdCb(0, 'google.com');
       assert.ok(!ssh.cb.called);
-      ssh.cmdCb(0, 'maps.google.com');
+      ssh._cmdCb(0, 'maps.google.com');
       assert.ok(ssh.cb.calledOnce);
     });
   });
 
-  suite('playground', function(){
-    test('do stuff', function(done){
+  //suite('playground', function(){
+  //  test('do stuff', function(done){
 
-      var remoteServer = new Shync(this.LIVEopts);
-      remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
-        console.log('scp called with:', code);
-        remoteServer.run('sleep 5', function(code){
-          console.log('ssh called with:', code);
-          remoteServer.run('mv testerooney testeramma', function(code){
-            console.log('ssh called with:', code);
-            done();
-          });
-        });
-      });
+  //    var remoteServer = new Shync(this.LIVEopts);
+  //    remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
+  //      console.log('scp called with:', code);
+  //      remoteServer.run('sleep 2', function(code){
+  //        console.log('ssh called with:', code);
+  //        remoteServer.run('mv testerooney testeramma', function(code){
+  //          console.log('ssh called with:', code);
+  //          done();
+  //        });
+  //      });
+  //    });
 
-    });
-  });
+  //  });
+  //});
 
 });
