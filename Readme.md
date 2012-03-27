@@ -52,7 +52,7 @@ cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
 
 ## code === 0
 
-shync callbacks always receive the [return code](ttp://en.wikipedia.org/wiki/Exit_status) of the command that was run. If the command was unsuccessful or otherwise returned something other than 0, the first non-zero return code will be passed.
+shync callbacks always receive the [return code](http://en.wikipedia.org/wiki/Exit_status) of the command that was run. If the command was unsuccessful or otherwise returned something other than 0, the first non-zero return code will be passed.
 
 ## bypassFingerprint
 
