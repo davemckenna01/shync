@@ -12,18 +12,20 @@ suite('Shync', function(){
       domains:['abc.com', '123.456.789'],
       user:   'ubuntu',
       keyLoc: '/foo/id_rsa.pub',
+      bypassFingerprint: false
     };
     this.singleCmdOpts = {
       domain:this.opts.domains[0],
       user:   this.opts.user,
-      keyLoc: this.opts.keyLoc
+      keyLoc: this.opts.keyLoc,
     };
 
     this.LIVEopts = {
-      domains:['ec2-107-22-124-43.compute-1.amazonaws.com', 
-               'ec2-107-21-142-80.compute-1.amazonaws.com'],
+      domains:['ec2-23-20-102-179.compute-1.amazonaws.com', 
+               'ec2-107-22-132-164.compute-1.amazonaws.com'],
       user:   'ubuntu',
       keyLoc: '/Users/davemckenna/.ec2/ec21.pem',
+      bypassFingerprint: true
     };
   });
 
@@ -164,10 +166,36 @@ suite('Shync', function(){
       assert.ok(ssh.domains.hasOwnProperty(this.singleCmdOpts.domain));
       assert.isFalse(ssh.domains[this.singleCmdOpts.domain].cmdComplete);
     });
-    
+
+    test('should add RSA fingerprint bypass args if bypassFingerprint is true', function(){
+      var ssh = new Shync(this.opts);
+
+      sinon.stub(ssh, 'spawn', function(){
+        return {
+          addListener: sinon.stub()
+        }
+      });
+      var opts = this.singleCmdOpts;
+
+      ssh.bypassFingerprint = true;
+      ssh._runCmd(opts, 'date');
+
+      var sshParams = [];
+      sshParams.push('-i' + opts.keyLoc);
+      sshParams.push('-l' + opts.user);
+      sshParams.push(opts.domain);
+      sshParams.push('date');
+      sshParams.push('-oUserKnownHostsFile=/dev/null');
+      sshParams.push('-oStrictHostKeyChecking=no');
+
+      assert.ok(ssh.spawn.calledOnce);
+      assert.ok(ssh.spawn.calledWith('ssh', sshParams));
+
+    });
+
     test('should call Shync.spawn with the ssh or scp cmd', function(){
       var ssh = new Shync(this.opts);
-      
+
       sinon.stub(ssh, 'spawn', function(){
         return {
           addListener: sinon.stub()
@@ -186,14 +214,14 @@ suite('Shync', function(){
       assert.ok(ssh.spawn.calledWith('ssh', sshParams));
 
       
-      var ssh = new Shync(this.opts);
+      ssh = new Shync(this.opts);
       
       sinon.stub(ssh, 'spawn', function(){
         return {
           addListener: sinon.stub()
         }
       });
-      var opts = this.singleCmdOpts;
+      opts = this.singleCmdOpts;
       ssh._runCmd(opts, ['/foo/bar', '/bar/baz']);
 
       var scpParams = [];
@@ -397,22 +425,31 @@ suite('Shync', function(){
     });
   });
 
-  //suite('playground', function(){
-  //  test('do stuff', function(done){
+  suite('playground', function(){
+    test('do stuff', function(done){
 
-  //    var remoteServer = new Shync(this.LIVEopts);
-  //    remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
-  //      console.log('scp called with:', code);
-  //      remoteServer.run('sleep 2', function(code){
-  //        console.log('ssh called with:', code);
-  //        remoteServer.run('mv testerooney testeramma', function(code){
-  //          console.log('ssh called with:', code);
-  //          done();
-  //        });
-  //      });
-  //    });
+      //var remoteServer = new Shync(this.LIVEopts);
+      //remoteServer.run('sleep 2', function(code){
+      //  console.log('ssh called with:', code);
+      //  remoteServer.run('touch someFile', function(code){
+      //    console.log('ssh called with:', code);
+      //    done();
+      //  });
+      //});
 
-  //  });
-  //});
+      var remoteServer = new Shync(this.LIVEopts);
+      remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
+        console.log('scp called with:', code);
+        remoteServer.run('sleep 2', function(code){
+          console.log('ssh called with:', code);
+          remoteServer.run('mv testerooney testeramma', function(code){
+            console.log('ssh called with:', code);
+            done();
+          });
+        });
+      });
+
+    });
+  });
 
 });
