@@ -1,6 +1,8 @@
-# shync - simple parallel cluster management
+# shync
 
-## Basic Usage:
+shync is a simple, parallel cluster management tool for node. Specify an ssh or scp command and it will run on all servers in the cluster in parallel.
+
+## ssh
 
 ```js
 var Shync = require('shync').Shync;
@@ -14,6 +16,16 @@ var cluster = new Shync({
 });
 
 cluster.run('node ~/stuff/important.js', function(code){
+  if (code === 0){
+    console.log('you\'ve done something important on many machines!');
+  }
+});
+```
+
+## scp
+
+```js
+cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
   if (code === 0){
     console.log('you\'ve done something important on many machines!');
   }
@@ -40,7 +52,7 @@ cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
 
 ## code === 0
 
-shync callbacks always receive the return code of the command run. If the command was not successful or otherwise returned something other than 
+shync callbacks always receive the [return code](ttp://en.wikipedia.org/wiki/Exit_status) of the command that was run. If the command was unsuccessful or otherwise returned something other than 0, the first non-zero return code will be passed.
 
 ## bypassFingerprint
 
@@ -62,4 +74,3 @@ You know when you ssh from the command line into a brand new box, and you get th
 bypassFingerprint: true stops this from happening.
 
 _Warning_ Use bypassFingerprint at your own risk.
-
