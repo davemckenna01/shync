@@ -114,7 +114,7 @@ suite('Shync', function(){
 
     test('should expect an opts object and command (str or array) as args', function(){
       var ssh = new Shync(this.opts);
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.stub()
         }
@@ -156,7 +156,7 @@ suite('Shync', function(){
 
     test('should add an object representing command state to Shync.domains', function(){
       var ssh = new Shync(this.opts);
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.stub()
         }
@@ -170,7 +170,7 @@ suite('Shync', function(){
     test('should add RSA fingerprint bypass args if bypassFingerprint is true', function(){
       var ssh = new Shync(this.opts);
 
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.stub()
         }
@@ -188,15 +188,15 @@ suite('Shync', function(){
       sshParams.push(opts.domain);
       sshParams.push('date');
 
-      assert.ok(ssh.spawn.calledOnce);
-      assert.ok(ssh.spawn.calledWith('ssh', sshParams));
+      assert.ok(ssh._spawn.calledOnce);
+      assert.ok(ssh._spawn.calledWith('ssh', sshParams));
 
     });
 
-    test('should call Shync.spawn with the ssh or scp cmd', function(){
+    test('should call Shync._spawn with the ssh or scp cmd', function(){
       var ssh = new Shync(this.opts);
 
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.stub()
         }
@@ -210,13 +210,13 @@ suite('Shync', function(){
       sshParams.push(opts.domain);
       sshParams.push('date');
 
-      assert.ok(ssh.spawn.calledOnce);
-      assert.ok(ssh.spawn.calledWith('ssh', sshParams));
+      assert.ok(ssh._spawn.calledOnce);
+      assert.ok(ssh._spawn.calledWith('ssh', sshParams));
 
       
       ssh = new Shync(this.opts);
       
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.stub()
         }
@@ -229,15 +229,15 @@ suite('Shync', function(){
       scpParams.push('/foo/bar');
       scpParams.push(opts.user+'@'+opts.domain+':'+'/bar/baz');
 
-      assert.ok(ssh.spawn.calledOnce);
-      assert.ok(ssh.spawn.calledWith('scp', scpParams));
+      assert.ok(ssh._spawn.calledOnce);
+      assert.ok(ssh._spawn.calledWith('scp', scpParams));
 
       
     });
 
     test('should add a process to Shync.procs', function(){
       var ssh = new Shync(this.opts);
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.stub()
         }
@@ -249,11 +249,11 @@ suite('Shync', function(){
 
     });
 
-    test('should call Shync.spawn().addListener with "exit" and a cb', function(){
+    test('should call Shync._spawn().addListener with "exit" and a cb', function(){
 
       var ssh = new Shync(this.opts);
 
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return {
           addListener: sinon.spy()
         }
@@ -272,7 +272,7 @@ suite('Shync', function(){
       var ssh = new Shync(this.opts);
       ssh._cmdCb = sinon.spy();
 
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return new EventEmitter();
       });
 
@@ -287,7 +287,7 @@ suite('Shync', function(){
 
     test('should call Shync._cmdCb as commands complete', function(done){
       var ssh = new Shync(this.opts);
-      sinon.stub(ssh, 'spawn', function(){
+      sinon.stub(ssh, '_spawn', function(){
         return new EventEmitter();
       });
 

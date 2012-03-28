@@ -1,0 +1,18 @@
+{
+  "name": "shync",
+  "version": "0.1.0",
+  "description": "Simple parallel server cluster management tool using ssh and scp",
+  "keywords": ["parallel", "cluster", "server", "ssh", "scp"],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/davemckenna01/shync.git"
+  },
+  "author": "Dave McKenna <davemckenna01@gmail.com>",
+  "devDependencies": {
+    "chai": "*",
+    "sinon": "*",
+    "mocha": "*"
+  },
+  "main": "./lib/shync.js",
+  "engines": { "node": ">=0.4.0" }
+}
