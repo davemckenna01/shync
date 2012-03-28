@@ -37,7 +37,7 @@ cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
 ```js
 cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
   if (code === 0) {
-    cluster.run('tar -g -z ~/stuff/important.tar.gz', function(code){
+    cluster.run('tar xzvf ~/stuff/important.tar.gz', function(code){
       if (code === 0){
         cluster.run('node ~/stuff/important.js', function(code){
           if (code === 0){
