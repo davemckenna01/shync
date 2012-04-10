@@ -1,6 +1,6 @@
 # shync
 
-Simple parallel server cluster management tool for node using ssh and scp. Specify an ssh or scp command and it will run on all servers in the cluster in parallel.
+Simple parallel server cluster management tool for Node using ssh and scp. Specify an ssh or scp command and it will run on all servers in the cluster in parallel.
 
 ## Installation
 
