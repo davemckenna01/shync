@@ -53,7 +53,7 @@ suite('Shync', function(){
   });
 
   suite('run()', function(){
-    test('should add return a deferred', function(){
+    test('should return a deferred', function(){
       var ssh, running;
       ssh = new Shync(this.opts);
       ssh._runCmd = sinon.stub();
@@ -67,14 +67,14 @@ suite('Shync', function(){
       ssh._runCmd = sinon.stub();
 
       ssh.domains = {foo:'bar'};
-      ssh.procs = {bar:'baz'};
-      ssh.deferred = new Q.defer().resolve();
+      ssh._procs = {bar:'baz'};
+      ssh._deferred = new Q.defer().resolve();
 
       ssh.run('date');
       
       assert.deepEqual({}, ssh.domains);
-      assert.deepEqual({}, ssh.procs);
-      assert.isFalse(ssh.deferred.promise.isResolved());
+      assert.deepEqual({}, ssh._procs);
+      assert.isFalse(ssh._deferred.promise.isResolved());
     });
 
     test('should call _runCmd() w/ opts and the command, iterating over\
@@ -230,7 +230,7 @@ suite('Shync', function(){
       
     });
 
-    test('should add a process to Shync.procs', function(){
+    test('should add a process to Shync._procs', function(){
       var ssh = new Shync(this.opts);
       sinon.stub(ssh, '_spawn', function(){
         return {
@@ -240,7 +240,7 @@ suite('Shync', function(){
       var opts = this.singleCmdOpts;
       ssh._runCmd(opts, 'date');
 
-      assert.ok(ssh.procs.hasOwnProperty(opts.domain));
+      assert.ok(ssh._procs.hasOwnProperty(opts.domain));
 
     });
 
@@ -257,7 +257,7 @@ suite('Shync', function(){
 
       ssh._runCmd(this.singleCmdOpts, 'date');
       
-      var proc = ssh.procs[this.singleCmdOpts.domain];
+      var proc = ssh._procs[this.singleCmdOpts.domain];
 
       assert.ok(proc.addListener.calledOnce);
       assert.ok(proc.addListener.calledWith('exit'));
@@ -274,7 +274,7 @@ suite('Shync', function(){
 
       this.singleCmdOpts.domain = 'hithere.com';
       ssh._runCmd(this.singleCmdOpts, 'date');
-      ssh.procs['hithere.com'].emit('exit', 0);
+      ssh._procs['hithere.com'].emit('exit', 0);
       
       assert.ok(ssh._cmdCb.calledOnce);
       assert.ok(ssh._cmdCb.calledWith(0, 'hithere.com'));
@@ -303,14 +303,14 @@ suite('Shync', function(){
       ssh._runCmd(this.singleCmdOpts, 'date');
 
       setTimeout(function(){
-        ssh.procs['hithere.com'].emit('exit', 0);
+        ssh._procs['hithere.com'].emit('exit', 0);
       }, 250);
 
       this.singleCmdOpts.domain = 'hellotoyou.com';
       ssh._runCmd(this.singleCmdOpts, 'date');
 
       setTimeout(function(){
-        ssh.procs['hellotoyou.com'].emit('exit', 0);
+        ssh._procs['hellotoyou.com'].emit('exit', 0);
       }, 500);
 
     });
@@ -359,8 +359,8 @@ suite('Shync', function(){
       ssh.domains['google.com'] =      {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
 
-      ssh.procs['google.com'] =      {kill:sinon.stub()};
-      ssh.procs['maps.google.com'] = {kill:sinon.stub()};
+      ssh._procs['google.com'] =      {kill:sinon.stub()};
+      ssh._procs['maps.google.com'] = {kill:sinon.stub()};
 
       ssh._cmdCb(1928, 'google.com');
 
@@ -380,18 +380,18 @@ suite('Shync', function(){
       ssh.domains['maps.google.com'] = {cmdComplete: false};
       ssh.domains['docs.google.com'] = {cmdComplete: false};
 
-      ssh.procs['mail.google.com'] = {kill:sinon.spy()};
-      ssh.procs['google.com'] =      {kill:sinon.spy()};
-      ssh.procs['maps.google.com'] = {kill:sinon.spy()};
-      ssh.procs['docs.google.com'] = {kill:sinon.spy()};
+      ssh._procs['mail.google.com'] = {kill:sinon.spy()};
+      ssh._procs['google.com'] =      {kill:sinon.spy()};
+      ssh._procs['maps.google.com'] = {kill:sinon.spy()};
+      ssh._procs['docs.google.com'] = {kill:sinon.spy()};
 
       ssh._cmdCb(0, 'mail.google.com');
       ssh._cmdCb(1928, 'google.com');
 
-      assert.ok(!ssh.procs['mail.google.com'].kill.called);
-      assert.ok(!ssh.procs['google.com'].kill.called);
-      assert.ok(ssh.procs['maps.google.com'].kill.calledOnce);
-      assert.ok(ssh.procs['docs.google.com'].kill.calledOnce);
+      assert.ok(!ssh._procs['mail.google.com'].kill.called);
+      assert.ok(!ssh._procs['google.com'].kill.called);
+      assert.ok(ssh._procs['maps.google.com'].kill.calledOnce);
+      assert.ok(ssh._procs['docs.google.com'].kill.calledOnce);
 
     });
 
@@ -401,8 +401,8 @@ suite('Shync', function(){
 
       ssh.domains['google.com'] =      {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
-      ssh.procs['google.com'] =      {kill:sinon.stub()};
-      ssh.procs['maps.google.com'] = {kill:sinon.stub()};
+      ssh._procs['google.com'] =      {kill:sinon.stub()};
+      ssh._procs['maps.google.com'] = {kill:sinon.stub()};
 
       ssh._cmdCb(1928, 'google.com');
       assert.ok(ssh.cb.called);
@@ -414,8 +414,8 @@ suite('Shync', function(){
 
       ssh.domains['google.com'] =      {cmdComplete: false};
       ssh.domains['maps.google.com'] = {cmdComplete: false};
-      ssh.procs['google.com'] =      {kill:sinon.stub()};
-      ssh.procs['maps.google.com'] = {kill:sinon.stub()};
+      ssh._procs['google.com'] =      {kill:sinon.stub()};
+      ssh._procs['maps.google.com'] = {kill:sinon.stub()};
 
       ssh._cmdCb(0, 'google.com');
       assert.ok(!ssh.cb.called);
