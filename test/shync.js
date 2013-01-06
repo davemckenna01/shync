@@ -423,11 +423,11 @@ suite('Shync', function(){
     });
   });
 
-  suite('playground', function(){
-    test('do stuff', function(done){
-      var remoteServer = new Shync(this.LIVEopts);
-      remoteServer.run('/users/davemckenna/awesomefile', '~');
-    });
-  });
+  // suite('playground', function(){
+  //   test('do stuff', function(done){
+  //     var remoteServer = new Shync(this.LIVEopts);
+  //     remoteServer.run('/users/davemckenna/awesomefile', '~');
+  //   });
+  // });
 
 });
