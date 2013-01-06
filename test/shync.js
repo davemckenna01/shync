@@ -21,10 +21,10 @@ suite('Shync', function(){
     };
 
     this.LIVEopts = {
-      domains:['ec2-23-20-102-179.compute-1.amazonaws.com', 
-               'ec2-107-22-132-164.compute-1.amazonaws.com'],
+      domains:['ec2-23-20-227-161.compute-1.amazonaws.com', 
+               'ec2-23-23-20-163.compute-1.amazonaws.com'],
       user:   'ubuntu',
-      keyLoc: '/Users/davemckenna/.ec2/ec21.pem',
+      keyLoc: '/Users/davemckenna/.ec2/ec22.pem',
       bypassFingerprint: true
     };
   });
@@ -425,22 +425,11 @@ suite('Shync', function(){
     });
   });
 
-  //suite('playground', function(){
-  //  test('do stuff', function(done){
-
-  //    var remoteServer = new Shync(this.LIVEopts);
-  //    remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
-  //      console.log('scp called with:', code);
-  //      remoteServer.run('sleep 2', function(code){
-  //        console.log('ssh called with:', code);
-  //        remoteServer.run('mv testerooney testeramma', function(code){
-  //          console.log('ssh called with:', code);
-  //          done();
-  //        });
-  //      });
-  //    });
-
-  //  });
-  //});
+  suite('playground', function(){
+    test('do stuff', function(done){
+      var remoteServer = new Shync(this.LIVEopts);
+      remoteServer.run('/users/davemckenna/awesomefile', '~');
+    });
+  });
 
 });
