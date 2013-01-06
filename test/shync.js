@@ -68,13 +68,13 @@ suite('Shync', function(){
 
       ssh.domains = {foo:'bar'};
       ssh._procs = {bar:'baz'};
-      ssh._deferred = new Q.defer().resolve();
+      ssh._running = new Q.defer().resolve();
 
       ssh.run('date');
       
       assert.deepEqual({}, ssh.domains);
       assert.deepEqual({}, ssh._procs);
-      assert.isFalse(ssh._deferred.promise.isResolved());
+      assert.isFalse(ssh._running.promise.isResolved());
     });
 
     test('should call _runCmd() w/ opts and the command, iterating over\
