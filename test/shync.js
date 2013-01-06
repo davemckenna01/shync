@@ -273,17 +273,6 @@ suite('Shync', function(){
   });
 
   suite('_cmdCb()', function(){
-    test('should expect a return code and a domain', function(){
-      var ssh = new Shync(this.opts);
-      ssh.cb = sinon.stub();
-      assert.throws(function(){
-        ssh._cmdCb();
-      });
-      assert.doesNotThrow(function(){
-        ssh._cmdCb(0, 'google.com');
-      });
-    });
-
     test('should update Shync.domains state object', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.stub();
