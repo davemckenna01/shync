@@ -52,7 +52,8 @@ suite('Shync', function(){
   });
 
   suite('run()', function(){
-    test('should expect a command string and a cb, or a source path + dest path and a cb', function(){
+    test('should expect a command string and a cb, or a source path + dest path\
+    and a cb', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
       ssh._runCmd = sinon.stub();
@@ -71,7 +72,8 @@ suite('Shync', function(){
       assert.strictEqual(cb, ssh.cb);
     });
 
-    test('should reset object state, for running with a clean slate', function(){
+    test('should reset object state, for running with a clean slate',
+    function(){
       function cb (){}
       var ssh = new Shync(this.opts);
       ssh._runCmd = sinon.stub();
@@ -86,7 +88,8 @@ suite('Shync', function(){
 
     });
 
-    test('should call _runCmd() w/ opts and the command, iterating over domains', function(){
+    test('should call _runCmd() w/ opts and the command, iterating over\
+    domains', function(){
       var ssh = new Shync(this.opts);
       ssh._runCmd = sinon.spy();
       ssh.run('date', function(){});
@@ -112,7 +115,8 @@ suite('Shync', function(){
 
   suite('_runCmd()', function(){
 
-    test('should expect an opts object and command (str or array) as args', function(){
+    test('should expect an opts object and command (str or array) as args',
+    function(){
       var ssh = new Shync(this.opts);
       sinon.stub(ssh, '_spawn', function(){
         return {
@@ -154,7 +158,8 @@ suite('Shync', function(){
       });
     });
 
-    test('should add an object representing command state to Shync.domains', function(){
+    test('should add an object representing command state to Shync.domains',
+    function(){
       var ssh = new Shync(this.opts);
       sinon.stub(ssh, '_spawn', function(){
         return {
@@ -167,7 +172,8 @@ suite('Shync', function(){
       assert.isFalse(ssh.domains[this.singleCmdOpts.domain].cmdComplete);
     });
 
-    test('should add RSA fingerprint bypass args if bypassFingerprint is true', function(){
+    test('should add RSA fingerprint bypass args if bypassFingerprint is true',
+    function(){
       var ssh = new Shync(this.opts);
 
       sinon.stub(ssh, '_spawn', function(){
@@ -249,7 +255,8 @@ suite('Shync', function(){
 
     });
 
-    test('should call Shync._spawn().addListener with "exit" and a cb', function(){
+    test('should call Shync._spawn().addListener with "exit" and a cb',
+    function(){
 
       var ssh = new Shync(this.opts);
 
@@ -341,7 +348,8 @@ suite('Shync', function(){
       assert.isTrue(ssh.domains['google.com'].cmdComplete);
     });
 
-    test('should call the user-provided callback with a ret code of 0 if all commands have completed with a 0', function(){
+    test('should call the user-provided callback with a ret code of 0 if all\
+    commands have completed with a 0', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.spy();
       ssh.domains['google.com'] = {cmdComplete: false};
@@ -355,7 +363,8 @@ suite('Shync', function(){
       
     });
 
-    test('should call the user cb immediately with the ret code if the ret code is not 0', function(){
+    test('should call the user cb immediately with the ret code if the ret code\
+    is not 0', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.spy();
       ssh.domains['google.com'] =      {cmdComplete: false};
@@ -372,7 +381,8 @@ suite('Shync', function(){
       assert.isFalse(ssh.domains['maps.google.com'].cmdComplete);
     });
 
-    test('should kill all outstanding processes as soon as we get a non 0 ret code from a process', function(){
+    test('should kill all outstanding processes as soon as we get a non 0 ret\
+    code from a process', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.spy();
       
