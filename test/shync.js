@@ -102,50 +102,6 @@ suite('Shync', function(){
   });
 
   suite('_runCmd()', function(){
-
-    test('should expect an opts object and command (str or array) as args',
-    function(){
-      var ssh = new Shync(this.opts);
-      sinon.stub(ssh, '_spawn', function(){
-        return {
-          addListener: sinon.stub()
-        }
-      });
-
-      assert.throws(function(){ssh._runCmd()});
-      assert.throws(function(){ssh._runCmd({}, '')});
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, '')
-      });
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, [])
-      });
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, [''])
-      });
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, ['/foo/bar'])
-      });
-      assert.doesNotThrow(function(){
-        ssh._runCmd({domain: 'abc.com',
-                    user:   'ubuntu',
-                    keyLoc: '/foo/id_rsa.pub'}, 'date');
-      });
-      assert.doesNotThrow(function(){
-        ssh._runCmd({domain: 'abc.com',
-                    user:   'ubuntu',
-                    keyLoc: '/foo/id_rsa.pub'}, ['/foo/bar', '/bar/baz']);
-      });
-    });
-
     test('should add an object representing command state to Shync.domains',
     function(){
       var ssh = new Shync(this.opts);
