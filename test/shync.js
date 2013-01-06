@@ -1,6 +1,7 @@
 var assert = require('chai').assert,
     sinon  = require('sinon'),
     util   = require('util'),
+    Q      = require('q'),
     Shync  = require('../lib/shync.js').Shync;
 
 var EventEmitter = require('events').EventEmitter;
@@ -62,18 +63,18 @@ suite('Shync', function(){
 
     test('should reset object state, for running with a clean slate',
     function(){
-      function cb (){}
       var ssh = new Shync(this.opts);
       ssh._runCmd = sinon.stub();
-      ssh.cbCalled = true;
+
       ssh.domains = {foo:'bar'};
       ssh.procs = {bar:'baz'};
-      ssh.run('date', cb);
+      ssh.deferred = new Q.defer().resolve();
+
+      ssh.run('date');
       
-      assert.isFalse(ssh.cbCalled);
       assert.deepEqual({}, ssh.domains);
       assert.deepEqual({}, ssh.procs);
-
+      assert.isFalse(ssh.deferred.promise.isResolved());
     });
 
     test('should call _runCmd() w/ opts and the command, iterating over\
