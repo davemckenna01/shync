@@ -99,7 +99,6 @@ suite('Shync', function(){
         'date'
       ));
     });
-
   });
 
   suite('_runCmd()', function(){
