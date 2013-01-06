@@ -52,12 +52,12 @@ suite('Shync', function(){
   });
 
   suite('run()', function(){
-    test('should add the cb to the parent object', function(){
-      function cb (){}
-      var ssh = new Shync(this.opts);
+    test('should add return a deferred', function(){
+      var ssh, running;
+      ssh = new Shync(this.opts);
       ssh._runCmd = sinon.stub();
-      ssh.run('date', cb);
-      assert.strictEqual(cb, ssh.cb);
+      running = ssh.run('test')
+      assert.typeOf(running.then, 'function');
     });
 
     test('should reset object state, for running with a clean slate',
