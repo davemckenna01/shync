@@ -52,18 +52,6 @@ suite('Shync', function(){
   });
 
   suite('run()', function(){
-    test('should expect a command string and a cb, or a source path + dest path\
-    and a cb', function(){
-      function cb (){}
-      var ssh = new Shync(this.opts);
-      ssh._runCmd = sinon.stub();
-      assert.throws(function(){ssh.run()});
-      assert.throws(function(){ssh.run('date')});
-      assert.throws(function(){ssh.run('date', 'foo')});
-      assert.doesNotThrow(function(){ssh.run('date', cb)});
-      assert.doesNotThrow(function(){ssh.run('/foo/bar', '/bar/baz', cb)});
-    });
-
     test('should add the cb to the parent object', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
