@@ -128,7 +128,7 @@ suite('Shync', function(){
       var opts = this.singleCmdOpts;
 
       ssh.opts.bypassFingerprint = true;
-      ssh._runCmd(opts, 'date');
+      ssh._runCmd(opts, ['date']);
 
       var sshParams = [];
       sshParams.push('-oUserKnownHostsFile=/dev/null');
@@ -152,7 +152,7 @@ suite('Shync', function(){
         }
       });
       var opts = this.singleCmdOpts;
-      ssh._runCmd(opts, 'date');
+      ssh._runCmd(opts, ['date']);
 
       var sshParams = [];
       sshParams.push('-i' + opts.keyLoc);
@@ -193,7 +193,7 @@ suite('Shync', function(){
         }
       });
       var opts = this.singleCmdOpts;
-      ssh._runCmd(opts, 'date');
+      ssh._runCmd(opts, ['date']);
 
       assert.ok(ssh._procs.hasOwnProperty(opts.domain));
 
