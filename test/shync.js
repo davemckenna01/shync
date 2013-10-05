@@ -32,37 +32,7 @@ suite('Shync', function(){
   teardown(function(){
   });
 
-  suite('constructor', function(){
-    test('should expect an opts object arg', function(){
-      function cb (){}
-      assert.throws(function(){new Shync()});
-      assert.throws(function(){new Shync({})});
-      assert.throws(function(){
-        new Shync({domains: [],
-                   user:    '',
-                   keyLoc:  ''})
-      });
-      assert.doesNotThrow(function(){
-        new Shync({domains: ['abc.com'],
-                   user:    'ubuntu',
-                   keyLoc:  '/foo/id_rsa.pub'})
-      });
-
-    });
-  });
-
   suite('run()', function(){
-    test('should expect a command string and a cb, or a source path + dest path and a cb', function(){
-      function cb (){}
-      var ssh = new Shync(this.opts);
-      ssh._runCmd = sinon.stub();
-      assert.throws(function(){ssh.run()});
-      assert.throws(function(){ssh.run('date')});
-      assert.throws(function(){ssh.run('date', 'foo')});
-      assert.doesNotThrow(function(){ssh.run('date', cb)});
-      assert.doesNotThrow(function(){ssh.run('/foo/bar', '/bar/baz', cb)});
-    });
-
     test('should add the cb to the parent object', function(){
       function cb (){}
       var ssh = new Shync(this.opts);
@@ -111,49 +81,6 @@ suite('Shync', function(){
   });
 
   suite('_runCmd()', function(){
-
-    test('should expect an opts object and command (str or array) as args', function(){
-      var ssh = new Shync(this.opts);
-      sinon.stub(ssh, '_spawn', function(){
-        return {
-          addListener: sinon.stub()
-        }
-      });
-
-      assert.throws(function(){ssh._runCmd()});
-      assert.throws(function(){ssh._runCmd({}, '')});
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, '')
-      });
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, [])
-      });
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, [''])
-      });
-      assert.throws(function(){
-        ssh._runCmd({domain:'',
-                    user:'',
-                    keyLoc:''}, ['/foo/bar'])
-      });
-      assert.doesNotThrow(function(){
-        ssh._runCmd({domain: 'abc.com',
-                    user:   'ubuntu',
-                    keyLoc: '/foo/id_rsa.pub'}, 'date');
-      });
-      assert.doesNotThrow(function(){
-        ssh._runCmd({domain: 'abc.com',
-                    user:   'ubuntu',
-                    keyLoc: '/foo/id_rsa.pub'}, ['/foo/bar', '/bar/baz']);
-      });
-    });
-
     test('should add an object representing command state to Shync.domains', function(){
       var ssh = new Shync(this.opts);
       sinon.stub(ssh, '_spawn', function(){
@@ -325,17 +252,6 @@ suite('Shync', function(){
   });
 
   suite('_cmdCb()', function(){
-    test('should expect a return code and a domain', function(){
-      var ssh = new Shync(this.opts);
-      ssh.cb = sinon.stub();
-      assert.throws(function(){
-        ssh._cmdCb();
-      });
-      assert.doesNotThrow(function(){
-        ssh._cmdCb(0, 'google.com');
-      });
-    });
-
     test('should update Shync.domains state object', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.stub();
