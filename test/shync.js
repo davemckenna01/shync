@@ -183,6 +183,7 @@ suite('Shync', function(){
       var sshParams = [];
       sshParams.push('-oUserKnownHostsFile=/dev/null');
       sshParams.push('-oStrictHostKeyChecking=no');
+      sshParams.push('-oNumberOfPasswordPrompts=0');
       sshParams.push('-i' + opts.keyLoc);
       sshParams.push('-l' + opts.user);
       sshParams.push(opts.domain);
@@ -205,6 +206,7 @@ suite('Shync', function(){
       ssh._runCmd(opts, 'date');
 
       var sshParams = [];
+      sshParams.push('-oNumberOfPasswordPrompts=0');
       sshParams.push('-i' + opts.keyLoc);
       sshParams.push('-l' + opts.user);
       sshParams.push(opts.domain);
@@ -225,6 +227,7 @@ suite('Shync', function(){
       ssh._runCmd(opts, ['/foo/bar', '/bar/baz']);
 
       var scpParams = [];
+      scpParams.push('-oNumberOfPasswordPrompts=0');
       scpParams.push('-i' + opts.keyLoc);
       scpParams.push('/foo/bar');
       scpParams.push(opts.user+'@'+opts.domain+':'+'/bar/baz');
