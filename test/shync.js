@@ -21,10 +21,10 @@ suite('Shync', function(){
     };
 
     this.LIVEopts = {
-      domains:['ec2-23-20-102-179.compute-1.amazonaws.com', 
-               'ec2-107-22-132-164.compute-1.amazonaws.com'],
+      domains:['ec2-54-226-122-165.compute-1.amazonaws.com', 
+               'ec2-54-211-169-161.compute-1.amazonaws.com'],
       user:   'ubuntu',
-      keyLoc: '/Users/davemckenna/.ec2/ec21.pem',
+      keyLoc: '/Users/davemckenna/.ec2/ec22.pem',
       bypassFingerprint: true
     };
   });
@@ -62,14 +62,14 @@ suite('Shync', function(){
       ssh.run('date', function(){});
 
       assert.ok(ssh._runCmd.calledTwice);
-      assert.ok(ssh._runCmd.getCall(0).calledWithExactly(
+      assert.ok(ssh._runCmd.getCall(0).calledWith(
         {domain:  this.opts.domains[0],
          user:    this.opts.user,
          keyLoc:  this.opts.keyLoc
         }, 
         'date'
       ));
-      assert.ok(ssh._runCmd.getCall(1).calledWithExactly(
+      assert.ok(ssh._runCmd.getCall(1).calledWith(
         {domain:  this.opts.domains[1],
          user:    this.opts.user,
          keyLoc:  this.opts.keyLoc
@@ -344,22 +344,13 @@ suite('Shync', function(){
     });
   });
 
-  //suite('playground', function(){
-  //  test('do stuff', function(done){
-
-  //    var remoteServer = new Shync(this.LIVEopts);
-  //    remoteServer.run('/users/davemckenna/testerooney', '~', function(code){
-  //      console.log('scp called with:', code);
-  //      remoteServer.run('sleep 2', function(code){
-  //        console.log('ssh called with:', code);
-  //        remoteServer.run('mv testerooney testeramma', function(code){
-  //          console.log('ssh called with:', code);
-  //          done();
-  //        });
-  //      });
-  //    });
-
-  //  });
-  //});
+  // suite('playground', function(){
+  //   test('do stuff', function(done){
+  //     var remoteServer = new Shync(this.LIVEopts);
+  //       remoteServer.run('ls -a', function(code){
+  //       console.log('scp called with:', code);
+  //      },function(o){console.log(o)},function(e){console.log(e)});
+  //   });
+  // });
 
 });

@@ -1,6 +1,6 @@
 {
   "name": "shync",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Simple parallel server cluster management tool using ssh and scp",
   "keywords": ["parallel", "cluster", "server", "ssh", "scp"],
   "repository": {

@@ -60,6 +60,29 @@ shync callbacks always receive the [return code](http://en.wikipedia.org/wiki/Ex
 
 shync fails quickly if a remote machine returns a non 0 code. All outstanding connections to the remaining servers are aborted, since their return codes are irrelevant now that a non 0 code has been received.
 
+## stdout and stderr
+
+You can specify a function to be called with the stdout and/or stderr of the program you're running:
+
+```js
+function cb(code) {}
+
+function stdout(data) {
+  console.log(data);
+}
+
+function stderr(data) {
+  console.log(data);
+}
+
+cluster.run('rm -rf /', cb, stdout, stderr);
+// ec2-54-226-122-165.compute-1.amazonaws.com:STDERR: rm: it is dangerous to operate recursively on `/'
+// ec2-54-226-122-165.compute-1.amazonaws.com:STDERR: rm: use --no-preserve-root to override this failsafe
+
+cluster.run('ls -a ~', cb, stdout, stderr);
+// ec2-54-226-122-165.compute-1.amazonaws.com:STDOUT: .  ..  .bash_history  .bashrc  .ssh
+```
+
 ## bypassFingerprint
 
 ```js
