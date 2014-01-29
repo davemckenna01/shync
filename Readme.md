@@ -65,21 +65,26 @@ shync fails quickly if a remote machine returns a non 0 code. All outstanding co
 You can specify a function to be called with the stdout and/or stderr of the program you're running:
 
 ```js
-function cb(code) {}
 
-function stdout(data) {
-  console.log(data);
+function stdout(out) {
+  console.log(out);
 }
 
-function stderr(data) {
-  console.log(data);
+function stderr(err) {
+  console.log(err);
 }
 
-cluster.run('rm -rf /', cb, stdout, stderr);
+var cluster = new Shync({
+  ...
+  stdout: stdout,
+  stderr: stderr
+});
+
+cluster.run('rm -rf /', cb);
 // ec2-54-226-122-165.compute-1.amazonaws.com:STDERR: rm: it is dangerous to operate recursively on `/'
 // ec2-54-226-122-165.compute-1.amazonaws.com:STDERR: rm: use --no-preserve-root to override this failsafe
 
-cluster.run('ls -a ~', cb, stdout, stderr);
+cluster.run('ls -a ~', cb);
 // ec2-54-226-122-165.compute-1.amazonaws.com:STDOUT: .  ..  .bash_history  .bashrc  .ssh
 ```
 

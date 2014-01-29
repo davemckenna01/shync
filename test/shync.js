@@ -21,11 +21,17 @@ suite('Shync', function(){
     };
 
     this.LIVEopts = {
-      domains:['ec2-54-226-122-165.compute-1.amazonaws.com', 
-               'ec2-54-211-169-161.compute-1.amazonaws.com'],
+      domains:['ec2-54-196-240-71.compute-1.amazonaws.com', 
+               'ec2-54-221-128-216.compute-1.amazonaws.com'],
       user:   'ubuntu',
       keyLoc: '/Users/davemckenna/.ec2/ec22.pem',
-      bypassFingerprint: true
+      bypassFingerprint: true,
+      stdout: function(o) {
+        console.log(o);
+      },
+      stderr: function(e) {
+        console.log(e);
+      }
     };
   });
 
@@ -347,9 +353,9 @@ suite('Shync', function(){
   // suite('playground', function(){
   //   test('do stuff', function(done){
   //     var remoteServer = new Shync(this.LIVEopts);
-  //       remoteServer.run('ls -a', function(code){
-  //       console.log('scp called with:', code);
-  //      },function(o){console.log(o)},function(e){console.log(e)});
+  //     remoteServer.run('ls -a', function(code){
+  //       console.log('ret code:', code);
+  //      });
   //   });
   // });
 
