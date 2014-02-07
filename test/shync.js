@@ -21,8 +21,8 @@ suite('Shync', function(){
     };
 
     this.LIVEopts = {
-      domains:['ec2-54-196-240-71.compute-1.amazonaws.com', 
-               'ec2-54-221-128-216.compute-1.amazonaws.com'],
+      domains:['ec2-174-129-171-245.compute-1.amazonaws.com', 
+               'ec2-54-225-9-79.compute-1.amazonaws.com'],
       user:   'ubuntu',
       keyLoc: '/Users/davemckenna/.ec2/ec22.pem',
       bypassFingerprint: true,
@@ -266,7 +266,7 @@ suite('Shync', function(){
       assert.isTrue(ssh.domains['google.com'].cmdComplete);
     });
 
-    test('should call the user-provided callback with a ret code of 0 if all commands have completed with a 0', function(){
+    test('should call the user-provided callback with null if all commands have completed with a 0', function(){
       var ssh = new Shync(this.opts);
       ssh.cb = sinon.spy();
       ssh.domains['google.com'] = {cmdComplete: false};
@@ -276,7 +276,7 @@ suite('Shync', function(){
       assert.ok(!ssh.cb.called);
       ssh._cmdCb(0, 'maps.google.com');
       assert.ok(ssh.cb.calledOnce);
-      assert.isNumber(ssh.cb.getCall(0).args[0]);
+      assert.isNull(ssh.cb.getCall(0).args[0]);
       
     });
 
@@ -292,7 +292,7 @@ suite('Shync', function(){
       ssh._cmdCb(1928, 'google.com');
 
       assert.ok(ssh.cb.calledOnce);
-      assert.ok(ssh.cb.calledWith(1928));
+      assert.ok(ssh.cb.calledWith('Error: google.com: Return Code 1928'));
       assert.isTrue(ssh.domains['google.com'].cmdComplete);
       assert.isFalse(ssh.domains['maps.google.com'].cmdComplete);
     });
@@ -352,10 +352,22 @@ suite('Shync', function(){
 
   // suite('playground', function(){
   //   test('do stuff', function(done){
-  //     var remoteServer = new Shync(this.LIVEopts);
-  //     remoteServer.run('ls -a', function(code){
-  //       console.log('ret code:', code);
-  //      });
+  //     var cluster = new Shync(this.LIVEopts);
+  //     // cluster.run('echo "console.log(\'yoohoo\')" > yoohoo.js', function(err){
+  //     //   if (err) return console.log(err);
+  //     //   cluster.run('cat yoohoo.js', function(err){
+  //     //     if (err) return console.log(err);
+  //     //     console.log('you\'ve done something important on many machines!');
+  //     //   });
+  //     // });
+
+  //     cluster.run('~/ascript.js', '~/ascript.js', function(err){
+  //       if (err) return console.log(err);
+  //       // cluster.run('cat ~/ascript.js', function(err){
+  //       //   if (err) return console.log(err);
+  //       //   console.log('you\'ve done something important on many machines!');
+  //       // });
+  //     });
   //   });
   // });
 

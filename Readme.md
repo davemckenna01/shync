@@ -19,32 +19,30 @@ var cluster = new Shync({
   bypassFingerprint: true
 });
 
-cluster.run('node ~/stuff/important.js', function(code){
-  if (code === 0){
-    console.log('you\'ve done something important on many machines!');
-  }
+cluster.run('node ~/stuff/important.js', function(err){
+  if (err) return console.log(err);
+  console.log('you\'ve done something important on many machines!');
 });
 ```
 
 ## scp
 
 ```js
-cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
-  if (code === 0){
-    console.log('you\'ve done something important on many machines!');
-  }
+cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(err){
+  if (err) return console.log(err);
+  console.log('you\'ve done something important on many machines!');
 });
 ```
 
 ## Chaining commands
 
 ```js
-cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
-  if (code === 0) {
-    cluster.run('tar xzvf ~/stuff/important.tar.gz', function(code){
-      if (code === 0){
-        cluster.run('node ~/stuff/important.js', function(code){
-          if (code === 0){
+cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(err){
+  if (err) return console.log(err);
+    cluster.run('tar xzvf ~/stuff/important.tar.gz', function(err){
+      if (err) return console.log(err);
+        cluster.run('node ~/stuff/important.js', function(err){
+          if (err) return console.log(err);
             console.log('you\'ve done something important on many machines!');
           }
         });
@@ -54,11 +52,11 @@ cluster.run('~/important.tar.gz', '~/stuff/important.tar.gz', function(code){
 });
 ```
 
-## code === 0
+## Return codes and the err callback parameter
 
-shync callbacks always receive the [return code](http://en.wikipedia.org/wiki/Exit_status) of the command that was run. shync treats the success of a command as "all or nothing." If the command was successful on all remote machines, 0 will be returned. If even one machine returned a non 0 code, then the command is deemed to have failed and the non 0 code will be returned to the callback.
+If a command was not successful, shync callbacks will receive the [return code](http://en.wikipedia.org/wiki/Exit_status) of the command that was run as the `err` paramater. shync treats the success of a command as "all or nothing." If the command was successful on all remote machines, `null` is returned to the callback. If even one machine returned a non 0 code, then the command as a whole is deemed to have failed and the non 0 code will be returned as the err param to the callback.
 
-shync fails quickly if a remote machine returns a non 0 code. All outstanding connections to the remaining servers are aborted, since their return codes are irrelevant now that a non 0 code has been received.
+shync fails quickly if a remote machine returns a non 0 code. All outstanding connections to the remaining servers are severed, since their return codes are irrelevant now that a non 0 code has been received.
 
 ## stdout and stderr
 
