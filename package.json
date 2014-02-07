@@ -11,7 +11,8 @@
   "devDependencies": {
     "chai": "*",
     "sinon": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "co": "*"
   },
   "main": "./lib/shync.js",
   "engines": { "node": ">=0.4.0" }
